@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Toy Inventory System</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+	$( document ).ready(function() {
+		populateInventoryTable();
+    });
+
+	function createInventory() {
+		$("#createForm").submit();
+	}
+	
+	function deleteInventory(id) {
+		alert(id);
+		return $.ajax({
+		    url: "/inventory/"+id+"/delete",
+		    type: 'DELETE',
+		    success: populateInventoryTable,
+		});
+	}
+	
+	function showUpdateFields(id) {
+		$("#updateFormId").val(id);
+		$("#updateFormDiv").show();
+	}
+	
+	function cancelUpdate() {
+		$("#updateFormDiv").hide();
+	}
+	
+	function updateInventory() {
+		$("#updateForm").attr("action", "/inventory/"+$("#updateFormId").val()+"/update")
+		$("#updateForm").submit();
+	}
+	
+	function populateInventoryTable() {
+		$.ajax({ 
+		   type    : "GET",
+		   url     : "/inventory/all",  
+		   success:function(data) {
+		       var table = $("#inventoryTable tbody");
+		       table.html("");
+		    	$.each(data, function(idx, elem){
+		        	table.append("<tr>");
+		        	table.append("<td>"+elem.name+"</td>");
+		        	table.append("<td>"+elem.price+"</td>");
+		        	table.append("<td><button id='"+elem._id+"'onclick=showUpdateFields(this.id)>EDIT</button></td>")
+		        	table.append("<td><button id='"+elem._id+"'onclick=deleteInventory(this.id)>DELETE</button></td>")
+		        	table.append("</tr>");
+		        });
+		    }
+		});
+	}
+</script>
+</head>
+<body>
+	<div style="margin-bottom:30px">
+		<table id="inventoryTable" border=1>
+			<thead>
+				<tr>
+					<th>NAME</th>
+					<th>PRICE</th>
+					<th></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<div style="margin-bottom:30px;">
+	    <form action="/inventory/create" method="POST" id="createForm">
+			name<input type="text" name="name">
+			price<input type="text" name="price">
+			<button onclick="createInventory()">ADD</button>
+		</form>
+	</div>
+	<div id="updateFormDiv" style="display:none">
+		<form id="updateForm" method="POST">
+			<input type="hidden" id="updateFormId"/>
+			name<input type="text" name="name" id="updateNameId">
+			price<input type="text" name="price" id="updatePriceId">
+			<button onclick="updateInventory()">UPDATE</button>
+			<button type="button" onclick="cancelUpdate()">CANCEL</button>
+		</form>
+	</div>
+</body>
+</html>
